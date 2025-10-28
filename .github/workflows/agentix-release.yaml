@@ -15,12 +15,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'pkg/**'
-      - 'cmd/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'Dockerfile'
 
 env:
   REGISTRY: ghcr.io
