@@ -14,7 +14,7 @@ on:
         type: string
   push:
     branches:
-      - feat/agentix-noise-filter
+      - main
     paths:
       - 'pkg/**'
       - 'cmd/**'
@@ -58,9 +58,10 @@ jobs:
           tags: |
             # Manual dispatch with custom tag
             type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            # Auto builds on feature branch
+            # Auto builds on main branch
             type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=sha,prefix=dev-,enable=${{ github.event_name == 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           labels: |
             org.opencontainers.image.title=AgentIX RTC Server
             org.opencontainers.image.description=AI-Enhanced WebRTC Server with Noise Filtering
