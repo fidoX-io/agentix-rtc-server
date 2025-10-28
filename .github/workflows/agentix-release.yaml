@@ -1,24 +1,20 @@
-# AgentIX RTC Server - Custom Release Workflow
-# This workflow is separate from LiveKit's original workflows
-# Publishes to GitHub Container Registry (ghcr.io) for AgentIX distribution
+# AgentIX RTC Server - Simple Docker Build
+# Builds multi-arch Docker images and publishes to GitHub Container Registry
+# Separate from LiveKit workflows - no conflicts with upstream
 
-name: AgentIX Release
+name: AgentIX Docker Build
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Release version (e.g., v1.0.0)'
+      tag:
+        description: 'Docker tag (e.g., v1.0.0, latest, dev)'
         required: true
+        default: 'dev'
         type: string
-      push_latest:
-        description: 'Also tag as latest'
-        required: false
-        default: true
-        type: boolean
   push:
     branches:
-      - master
+      - feat/agentix-noise-filter
     paths:
       - 'pkg/**'
       - 'cmd/**'
@@ -28,20 +24,20 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: fidox-io/agentix-rtc-server
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Log in to Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -54,28 +50,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract metadata
+      - name: Generate metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # For manual dispatch with version
-            type=raw,value=${{ github.event.inputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
-            type=raw,value=latest,enable=${{ github.event.inputs.push_latest == 'true' && github.event_name == 'workflow_dispatch' }}
-            # For automatic builds on master
+            # Manual dispatch with custom tag
+            type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            # Auto builds on feature branch
             type=ref,event=branch,enable=${{ github.event_name == 'push' }}
-            type=sha,prefix={{branch}}-,enable=${{ github.event_name == 'push' }}
-            type=raw,value=dev-latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+            type=sha,prefix=dev-,enable=${{ github.event_name == 'push' }}
           labels: |
             org.opencontainers.image.title=AgentIX RTC Server
-            org.opencontainers.image.description=AI-Enhanced Real-Time Communication Server based on LiveKit
+            org.opencontainers.image.description=AI-Enhanced WebRTC Server with Noise Filtering
             org.opencontainers.image.vendor=FidoX.io
-            org.opencontainers.image.url=https://github.com/fidoX-io/agentix-rtc-server
-            org.opencontainers.image.source=https://github.com/fidoX-io/agentix-rtc-server
-            org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.source=https://github.com/fidox-io/agentix-rtc-server
 
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -86,53 +78,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Create Release Summary
+      - name: Summary
         run: |
-          echo "## 🚀 AgentIX RTC Server Release" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 AgentIX Docker Build Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Docker Images Published" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Registry:** \`${{ env.REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Images:**" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Usage" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Usage:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "# Pull the image" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-latest" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "# Run the server" >> $GITHUB_STEP_SUMMARY
-          echo "docker run -p 7880:7880 -p 7881:7881 \\" >> $GITHUB_STEP_SUMMARY
-          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-latest" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev" >> $GITHUB_STEP_SUMMARY
+          echo "docker run -p 7880:7880 -p 7881:7881 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-  update-documentation:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update README with latest release
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          sed -i "s|ghcr.io/fidox-io/agentix-rtc-server:.*|ghcr.io/fidox-io/agentix-rtc-server:${VERSION}|g" README.md || true
-          
-          # Check if changes were made
-          if git diff --quiet README.md; then
-            echo "No changes needed in README.md"
-          else
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            git add README.md
-            git commit -m "docs: update Docker image version to ${VERSION}"
-            git push
-          fi
