@@ -41,6 +41,7 @@ import (
 	"github.com/livekit/livekit-server/pkg/config"
 	"github.com/livekit/livekit-server/pkg/rtc/transport"
 	"github.com/livekit/livekit-server/pkg/rtc/types"
+	"github.com/livekit/livekit-server/pkg/sfu"
 	"github.com/livekit/livekit-server/pkg/sfu/buffer"
 	"github.com/livekit/livekit-server/pkg/sfu/bwe"
 	"github.com/livekit/livekit-server/pkg/sfu/bwe/remotebwe"
@@ -300,6 +301,7 @@ type TransportParams struct {
 	FireOnTrackBySdp             bool
 	DataChannelMaxBufferedAmount uint64
 	DatachannelSlowThreshold     int
+	AudioConfig                  *sfu.AudioConfig // Add audio config for noise filtering
 
 	// for development test
 	DatachannelMaxReceiverBufferSize int
@@ -484,6 +486,19 @@ func newPeerConnection(params TransportParams, onBandwidthEstimator func(estimat
 		params.Logger.Debugw("rtx pair found from extension", "repair", repair, "base", base)
 		params.Config.BufferFactory.SetRTXPair(repair, base)
 	}, params.Logger))
+
+	// Add noise filter interceptor for audio processing (AgentIX enhancement)
+	if params.AudioConfig != nil && params.AudioConfig.NoiseFilter.Enabled {
+		noiseFilterFactory := sfuinterceptor.NewNoiseFilterFactory(
+			params.AudioConfig.NoiseFilter,
+			params.Logger,
+		)
+		ir.Add(noiseFilterFactory)
+		params.Logger.Infow("noise filter interceptor registered",
+			"enabled", params.AudioConfig.NoiseFilter.Enabled,
+			"threshold", params.AudioConfig.NoiseFilter.Threshold,
+			"aggressive", params.AudioConfig.NoiseFilter.Aggressive)
+	}
 
 	api := webrtc.NewAPI(
 		webrtc.WithMediaEngine(me),

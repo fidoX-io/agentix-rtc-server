@@ -8,12 +8,12 @@
 
 <!--END_BANNER_IMAGE-->
 
-# LiveKit: Real-time video, audio and data for developers
+# AgentIX RTC Server: AI-Enhanced Real-time Communication
 
-[LiveKit](https://livekit.io) is an open source project that provides scalable, multi-user conferencing based on WebRTC.
-It's designed to provide everything you need to build real-time video audio data capabilities in your applications.
+[AgentIX RTC Server](https://github.com/fidoX-io/agentix-rtc-server) is an enhanced WebRTC SFU (Selective Forwarding Unit) based on [LiveKit](https://livekit.io), featuring advanced AI-powered audio processing capabilities.
+Built specifically for real-time AI agent communication, it provides intelligent noise suppression and optimized audio quality for conversational AI applications.
 
-LiveKit's server is written in Go, using the awesome [Pion WebRTC](https://github.com/pion/webrtc) implementation.
+AgentIX RTC Server is written in Go, using the awesome [Pion WebRTC](https://github.com/pion/webrtc) implementation, with additional AI-powered enhancements.
 
 [![GitHub stars](https://img.shields.io/github/stars/livekit/livekit?style=social&label=Star&maxAge=2592000)](https://github.com/livekit/livekit/stargazers/)
 [![Slack community](https://img.shields.io/endpoint?url=https%3A%2F%2Flivekit.io%2Fbadges%2Fslack)](https://livekit.io/join-slack)
@@ -25,21 +25,28 @@ LiveKit's server is written in Go, using the awesome [Pion WebRTC](https://githu
 
 ## Features
 
+### 🎯 AI-Enhanced Audio Processing
+-   **Intelligent Noise Suppression**: RNNoise-powered real-time audio filtering
+-   **Voice Activity Detection**: Smart detection and preservation of speech content
+-   **Configurable Processing**: Adjustable thresholds and aggressive filtering modes
+
+### 🚀 Core SFU Capabilities
 -   Scalable, distributed WebRTC SFU (Selective Forwarding Unit)
 -   Modern, full-featured client SDKs
 -   Built for production, supports JWT authentication
 -   Robust networking and connectivity, UDP/TCP/TURN
 -   Easy to deploy: single binary, Docker or Kubernetes
--   Advanced features including:
-    -   [speaker detection](https://docs.livekit.io/home/client/tracks/subscribe/#speaker-detection)
-    -   [simulcast](https://docs.livekit.io/home/client/tracks/publish/#video-simulcast)
-    -   [end-to-end optimizations](https://blog.livekit.io/livekit-one-dot-zero/)
-    -   [selective subscription](https://docs.livekit.io/home/client/tracks/subscribe/#selective-subscription)
-    -   [moderation APIs](https://docs.livekit.io/home/server/managing-participants/)
-    -   end-to-end encryption
-    -   SVC codecs (VP9, AV1)
-    -   [webhooks](https://docs.livekit.io/home/server/webhooks/)
-    -   [distributed and multi-region](https://docs.livekit.io/home/self-hosting/distributed/)
+
+### 📊 Advanced Features
+-   [speaker detection](https://docs.livekit.io/home/client/tracks/subscribe/#speaker-detection)
+-   [simulcast](https://docs.livekit.io/home/client/tracks/publish/#video-simulcast)
+-   [end-to-end optimizations](https://blog.livekit.io/livekit-one-dot-zero/)
+-   [selective subscription](https://docs.livekit.io/home/client/tracks/subscribe/#selective-subscription)
+-   [moderation APIs](https://docs.livekit.io/home/server/managing-participants/)
+-   end-to-end encryption
+-   SVC codecs (VP9, AV1)
+-   [webhooks](https://docs.livekit.io/home/server/webhooks/)
+-   [distributed and multi-region](https://docs.livekit.io/home/self-hosting/distributed/)
 
 ## Documentation & Guides
 

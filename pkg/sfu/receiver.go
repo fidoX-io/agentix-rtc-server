@@ -72,11 +72,14 @@ type AudioConfig struct {
 	ActiveREDEncoding bool `yaml:"active_red_encoding,omitempty"`
 	// enable proxying weakest subscriber loss to publisher in RTCP Receiver Report
 	EnableLossProxying bool `yaml:"enable_loss_proxying,omitempty"`
+	// noise filter configuration for real-time audio processing
+	NoiseFilter audio.NoiseFilterConfig `yaml:"noise_filter,omitempty"`
 }
 
 var (
 	DefaultAudioConfig = AudioConfig{
 		AudioLevelConfig: audio.DefaultAudioLevelConfig,
+		NoiseFilter:      audio.DefaultNoiseFilterConfig(),
 	}
 )
 
